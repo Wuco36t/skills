@@ -61,6 +61,12 @@
       "skillPath": "skills/find-animation-opportunities/SKILL.md",
       "computedHash": "465d087c41768e4f14ed640dd049036009f613feb55baaa5831b68b33178f9d2"
     },
+    "image-to-code": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/image-to-code-skill/SKILL.md",
+      "computedHash": "b897c03456c9d01a0f307ad3ca50ebc853c1f46def1e38f35775358529e4053e"
+    },
     "improve-animations": {
       "source": "emilkowalski/skills",
       "sourceType": "github",
