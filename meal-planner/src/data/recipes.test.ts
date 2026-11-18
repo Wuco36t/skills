@@ -51,4 +51,14 @@ describe('starterRecipes', () => {
       for (const ing of r.ingredients) expect(ing.name, r.id).not.toMatch(/beef|govedin/i)
     }
   })
+
+  it('omega3 and b12 tags are backed by ingredients', () => {
+    const om3 = /salmon|trout|sardine|mackerel|herring|walnut|flax|linseed|chia|losos|postrv|sardel|orehi|laneno/i
+    const b12 = /egg|jajc|milk|mleko|yogh|jogurt|kefir|cheese|sir|feta|ricotta|skuta|fish|salmon|trout|cod|hake|sardine|losos|postrv|oslic|tuna/i
+    for (const r of starterRecipes) {
+      const names = r.ingredients.map((i) => i.name)
+      if (r.nutrients.includes('omega3')) expect(names.some((n) => om3.test(n)), `${r.id} omega3`).toBe(true)
+      if (r.nutrients.includes('b12')) expect(names.some((n) => b12.test(n)), `${r.id} b12`).toBe(true)
+    }
+  })
 })
