@@ -72,4 +72,57 @@ describe('parseRecipeFromHtml', () => {
   it('reads HowToStep and HowToSection instructions', () => {
     expect(ok(fx.howToRecipe).steps).toEqual(['Mix.', 'Heat pan.', 'Fry.'])
   })
+
+  const wrap = (obj: unknown) =>
+    `<script type="application/ld+json">${JSON.stringify(obj)}</script>`
+  const withLines = (lines: string[]) =>
+    ok(wrap({ '@type': 'Recipe', name: 'X', recipeIngredient: lines }))
+
+  it.each(['1 cup flour', '8 oz cheddar', '2-3 pcs eggs', '2–3 žlice olja', '200g/7oz flour'])(
+    'treats %s as unparsed',
+    (line) => {
+      const r = withLines([line])
+      expect(r.ingredients[0]).toMatchObject({ name: line, quantity: 1, unit: 'pcs' })
+      expect(r.safety.status).not.toBe('ok')
+      expect(r.safety.reasons.some((x) => x.startsWith('Could not parse ingredient:'))).toBe(true)
+    },
+  )
+
+  it('parses dual forms and 200g without space', () => {
+    const r = withLines(['2 žlici olja', '3 žlički soli', '200g flour'])
+    expect(r.ingredients[0]).toMatchObject({ name: 'olja', quantity: 2, unit: 'tbsp' })
+    expect(r.ingredients[1]).toMatchObject({ name: 'soli', quantity: 3, unit: 'tsp' })
+    expect(r.ingredients[2]).toMatchObject({ name: 'flour', quantity: 200, unit: 'g' })
+  })
+
+  it('can be ok when all ingredients are known-ok', () => {
+    expect(withLines(['200 g spinach', '2 eggs']).safety.status).toBe('ok')
+  })
+
+  it('blocks Slovenian meat and stays blocked beside an unparsed line', () => {
+    expect(withLines(['500 g piščančje meso']).safety.status).toBe('blocked')
+    expect(withLines(['500 g chicken', 'a pinch of love']).safety.status).toBe('blocked')
+  })
+
+  it('handles huge unterminated script input in linear time', () => {
+    const html = '<script type="application/ld+json">'.repeat(100_000)
+    const t0 = Date.now()
+    expect(parseRecipeFromHtml(html, URL)).toEqual({ ok: false, error: 'no-recipe-data' })
+    expect(Date.now() - t0).toBeLessThan(1000)
+    const t1 = Date.now()
+    parseRecipeFromHtml('<script '.repeat(200_000), URL)
+    expect(Date.now() - t1).toBeLessThan(1000)
+  })
+
+  it('never throws on deep nesting and caps counts', () => {
+    const deep = '{"itemListElement":'.repeat(10_000) + '{"text":"x"}' + '}'.repeat(10_000)
+    const html = `<script type="application/ld+json">{"@type":"Recipe","name":"D","recipeIngredient":["1 egg"],"recipeInstructions":${deep}}</script>`
+    expect(() => parseRecipeFromHtml(html, URL)).not.toThrow()
+    const r = withLines(Array.from({ length: 1000 }, (_, i) => `${i + 1} g rice`))
+    expect(r.ingredients.length).toBeLessThanOrEqual(200)
+    const steps = ok(
+      wrap({ '@type': 'Recipe', name: 'S', recipeIngredient: ['1 egg'], recipeInstructions: Array.from({ length: 1000 }, (_, i) => `s${i}`) }),
+    ).steps
+    expect(steps.length).toBeLessThanOrEqual(200)
+  })
 })
