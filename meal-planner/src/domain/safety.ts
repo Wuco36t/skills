@@ -84,19 +84,19 @@ export const KNOWN_OK: string[] = [
   'mushroom', 'champignon', 'gobe', 'goba', 'sampinjoni', 'leek', 'por',
   'celery', 'zelena', 'beetroot', 'pesa', 'pumpkin', 'buca', 'squash',
   'asparagus', 'sparglji', 'pea', 'peas', 'grah', 'corn', 'sweetcorn', 'koruza',
-  'avocado', 'avokado', 'eggplant', 'aubergine', 'jajcevec', 'brussels',
-  'sprouts', 'rukola', 'arugula', 'fennel', 'koromac', 'radicchio', 'radic',
+  'avocado', 'avokado', 'eggplant', 'aubergine', 'jajcevec', 'brusselssprouts',
+  'rukola', 'arugula', 'fennel', 'koromac', 'radicchio', 'radic',
   'olive', 'olivo',
   // fruit
   'apple', 'jabolko', 'jabolka', 'banana', 'banane', 'orange', 'pomaranca',
   'pomarance', 'lemon', 'limona', 'limone', 'lime', 'berry', 'berries', 'jagode',
-  'strawberry', 'blueberry', 'borovnice', 'raspberry', 'maline', 'pear', 'hruska',
+  'strawberry', 'blueberry', 'blueberries', 'borovnice', 'raspberry', 'maline', 'pear', 'hruska',
   'hruske', 'peach', 'breskev', 'mango', 'kiwi', 'kivi', 'grape', 'grozdje',
   'raisin', 'rozine', 'date', 'datlji', 'fig', 'smokve', 'plum', 'slive',
   'cherry', 'cesnje', 'melon', 'lubenica', 'watermelon',
   // legumes
   'lentil', 'lentils', 'leca', 'lece', 'chickpea', 'cicerika', 'bean', 'fizol',
-  'tofu', 'hummus', 'humus', 'tempeh', 'soy', 'soja', 'sojina', 'sojin',
+  'kidney', 'tofu', 'hummus', 'humus', 'tempeh', 'soy', 'soja', 'sojina', 'sojin',
   // grains
   'rice', 'riz', 'pasta', 'testenine', 'spaghetti', 'spageti', 'lasagna',
   'lasagne', 'lazanja', 'lazanje', 'penne', 'fusilli', 'noodle', 'noodles', 'oat',
@@ -113,7 +113,7 @@ export const KNOWN_OK: string[] = [
   'egg', 'eggs', 'jajce', 'jajca', 'greek', 'grski',
   // fish
   'salmon', 'losos', 'cod', 'polenovka', 'trout', 'postrv', 'sardine', 'sardele',
-  'haddock', 'fillet', 'fillets', 'file', 'fileji', 'brancin', 'skusa',
+  'haddock', 'hake', 'oslic', 'fillet', 'fillets', 'file', 'fileji', 'brancin', 'skusa',
   'prawn', 'shrimp', 'kozice',
   // nuts and seeds
   'almond', 'mandlji', 'mandelj', 'walnut', 'orehi', 'orah', 'cashew', 'hazelnut',
@@ -150,7 +150,9 @@ export function normalise(text: string): string {
 }
 
 function tokenise(text: string): string[] {
-  return normalise(text).split(/[^a-z0-9]+/).filter(Boolean)
+  // "brussels sprouts" is one known-ok word; a bare "sprouts" is not.
+  return normalise(text)
+    .replace(/\bbrussels sprouts?\b/g, 'brusselssprouts').split(/[^a-z0-9]+/).filter(Boolean)
 }
 
 function tokenMatches(pattern: string, token: string): boolean {

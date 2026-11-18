@@ -34,6 +34,12 @@ describe('checkSafety', () => {
     expect(checkSafety('x', [ing('sushi')]).status).toBe('blocked')
   })
 
+  it('treats only brussels sprouts as ok sprouts', () => {
+    expect(checkSafety('x', [ing('alfalfa sprouts')]).status).toBe('blocked')
+    expect(checkSafety('x', [ing('sprouts')]).status).not.toBe('ok')
+    expect(checkSafety('x', [ing('Brussels sprouts')]).status).toBe('ok')
+  })
+
   it('flags items to check', () => {
     expect(checkSafety('x', [ing('smoked salmon')]).status).toBe('check')
     expect(checkSafety('x', [ing('dimljen losos')]).status).toBe('check')
