@@ -55,4 +55,49 @@ describe('checkSafety', () => {
   it('blocked wins over check', () => {
     expect(checkSafety('x', [ing('mystery paste'), ing('bacon')]).status).toBe('blocked')
   })
+
+  it('does not let one harmless word make an ingredient ok', () => {
+    const cases: [string, string][] = [
+      ['cornish hen', 'blocked'], ['corn dog', 'check'], ['medium-rare steak', 'blocked'],
+      ['porchetta', 'blocked'], ['rabbit stew with carrots', 'blocked'],
+      ['duck with lemon', 'blocked'], ['salmon sashimi', 'blocked'], ['raw salmon', 'blocked'],
+      ['surov losos', 'blocked'], ['soft-boiled egg', 'check'], ['runny egg', 'check'],
+      ['mehko kuhano jajce', 'check'], ['surovo jajce', 'check'], ['raw egg', 'check'],
+    ]
+    for (const [name, status] of cases) {
+      expect([name, checkSafety('Dinner', [ing(name)]).status]).toEqual([name, status])
+    }
+  })
+
+  it('blocks the wider meat list in English and Slovenian', () => {
+    const names = ['duck', 'goose', 'rabbit', 'veal', 'ribs', 'steak', 'salami', 'prosciutto',
+      'pancetta', 'mortadella', 'pate', 'liver', 'chorizo', 'venison', 'kebab', 'burger',
+      'meatballs', 'meat', 'mince', 'hot dog', 'frankfurter', 'hamburger', 'raca', 'gos',
+      'zajec', 'teletina', 'rebra', 'salama', 'pašteta', 'jetra', 'divjačina', 'čevapčiči',
+      'polpete', 'mesne kroglice', 'perutnina', 'meso', 'jagnječje', 'šunka', 'sunka', 'prsut']
+    for (const name of names) {
+      expect([name, checkSafety('Dinner', [ing(name)]).status]).toEqual([name, 'blocked'])
+    }
+  })
+
+  it('handles Slovenian inflections and missing diacritics', () => {
+    expect(checkSafety('x', [ing('surovega mleka')]).status).toBe('blocked')
+    expect(checkSafety('x', [ing('piscanec')]).status).toBe('blocked')
+  })
+
+  it('minced-beef exemption only covers the beef word', () => {
+    expect(checkSafety('Bolognese', [ing('minced beef and chicken')]).status).toBe('blocked')
+    expect(checkSafety('Bolognese', [ing('ground beef, raw milk')]).status).toBe('blocked')
+    expect(checkSafety('Beef stew', [ing('ground beef')]).status).toBe('blocked')
+    expect(checkSafety('Spinach lasagna', [ing('ground beef')]).status).toBe('ok')
+  })
+
+  it('keeps ordinary starter ingredients ok', () => {
+    const names = ['Spinach', 'feta', 'eggs', 'red lentils', 'carrots', 'potatoes',
+      'salmon fillet', 'olive oil', 'rdeča leča', 'korenje', 'krompir', 'jajca', 'losos',
+      'tomatoes', 'sweet potato', 'crni poper', '200 g fresh spinach', 'tomato paste']
+    for (const name of names) {
+      expect([name, checkSafety('x', [ing(name)]).status]).toEqual([name, 'ok'])
+    }
+  })
 })
